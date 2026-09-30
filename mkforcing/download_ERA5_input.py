@@ -259,6 +259,14 @@ def generate_arco_datarequest(year, monthstr, days, request=None):
     selected = selected.expand_dims(
         latitude=[selected_latitude], longitude=[selected_longitude]
     ).transpose("time", "latitude", "longitude")
+    # CDO needs CF metadata to recognize a one-point lon/lat grid. Without
+    # units it treats the ARCO selection as a generic grid and gendis fails.
+    selected["latitude"].attrs.update(
+        {"standard_name": "latitude", "axis": "Y", "units": "degrees_north"}
+    )
+    selected["longitude"].attrs.update(
+        {"standard_name": "longitude", "axis": "X", "units": "degrees_east"}
+    )
     selected = selected.rename({"time": "valid_time"})
     selected["number"] = xr.DataArray(np.int32(0))
     selected["expver"] = xr.DataArray(
